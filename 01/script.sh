@@ -19,7 +19,43 @@ INFO_CSV=""
 DATE=$(date +"%D")
 
 # Период обновления инфорации
-PERIOD="10s"
+PERIOD="30m"
+
+#? Не знаю, почему, но парсинг аргументов не работает после того как мы распарсили $1
+#? вероятнее всего getopts начинает парсинг с самого первого аргумента $1 и не может его распознать
+#? но без START|STOP|STATUS все работает
+# function check_arg(){
+# 	if [[ $2 == -* ]]; then 
+# 		echo "Option $1 requires an argument"
+# 		exit 1
+# 	fi
+# }
+
+# parse_params()
+# {
+# 	while getopts :c:p: OPTION; do
+# 		case "$OPTION" in
+# 			c) 
+# 				echo "new csv path is $OPTARG"
+# 				check_arg "-c" "$OPTARG"
+# 				CSV_PATH=$OPTARG
+# 				;;
+# 			p)
+# 				echo "new periode is $OPTARG"
+# 				check_arg "-p" "$OPTARG"
+# 				PERIOD=$OPTARG
+# 				;;
+# 			:)
+# 				echo "Option -$OPTARG requires an argument (getopts)"
+# 				exit 1
+# 				;;
+# 			*) 
+# 				echo "unexpected option"
+# 				exit 1
+# 				;;
+# 		esac
+# 	done
+# }
 
 create_csv_file()
 {	
@@ -158,7 +194,7 @@ start()
 		do
 			# При переходе через сутки создаем новый .csv файл и начинаем писать в него
 			cur_date=$(date +"%D")
-			if [ cur_date != $DATE ]; then
+			if [ $cur_date != $DATE ]; then
 				create_csv_file # создаем новый файл
 				DATE=${cur_date} # присваиваем новое значение даты
 				_log "New .csv file created -- ${INFO_CSV}"
@@ -188,6 +224,8 @@ start()
 # Точка входа в программу -- обработка аргумента командной строки
 case $1 in
     "START")
+		#? Не знаю, почему, но парсинг аргументов не работает после того как мы распарсили $1
+		# parse_params
         start
         ;;
     "STOP")
