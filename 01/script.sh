@@ -9,10 +9,24 @@ PID_FILE="/run/my_daemon.pid"
 LOG_FILE="/tmp/my_daemon.log"
 # В этот файл будем записывать логи с ошибками
 ERR_LOG_FILE="/tmp/my_daemon_err.log"
+
+# путь для файла .csv
+CSV_PATH="/tmp"
+
 # В этот файл будем записывать отчет демона
-INFO_CSV="/tmp/info.csv" #TODO: генерация имени для файла
+INFO_CSV=""
+# при запуске скрипта будем фиксировать дату, это поможет нма понять, когда надо создавать новый .csv файл
+DATE=$(date +"%D")
+
 # Период обновления инфорации
 PERIOD="10s"
+
+create_csv_file()
+{	
+	INFO_CSV="${CSV_PATH}/$(date | sed 's/ /_/g').csv"
+	echo "Date,Disk,Size,Used,Free,Inode Size,Inode Used,Inode Free" > $INFO_CSV
+	_log "Created file ${INFO_CSV}"
+}
 
 # Аналог help
 usage()
@@ -65,9 +79,8 @@ _log()
     echo "$ts $hn $*" #! $* -- все аргументы функции в одной строке (см. https://ru.wikipedia.org/wiki/Bash)
 }
 
-# функция создает .csv файл, в который будет записываться информация о дисковом пространстве
-# также, функция создает файлы для логирования
-create_files()
+# функция создает файлы для логирования
+create_log_files()
 {
 	if [ -e ${LOG_FILE} ]; then
 		cat ${LOG_FILE} >> ${LOG_FILE}.prev
@@ -80,12 +93,6 @@ create_files()
 		rm -f ${ERR_LOG_FILE}
 	fi
 	touch ${ERR_LOG_FILE}
-
-	if [ ! -e ${INFO_CSV} ]; then
-		echo "Date,Disk,Size,Used,Free,Inode Size,Inode Used,Inode Free" > $INFO_CSV
-	else
-		echo "CSV file exists"
-    fi
 }
 
 # Функция происзодит отчистку при завершении демона
@@ -119,8 +126,9 @@ start()
     	fi
     fi
 
-	# создаем необходимые файлы
-	create_files
+	# создаем файлы с логами
+	create_log_files
+	create_csv_file # создаем новый файл
 
 	# получаем список файловых систем
 	#! df -- выводит список файловый систем
@@ -133,7 +141,7 @@ start()
    	exec > ${LOG_FILE} #! Перенаправляем стандартный вывод процесса в LOG_FILE
     exec 2> ${ERR_LOG_FILE} #! Перенаправляем стандарный поток ошибок в лог с ошибками
     exec < /dev/null #! Стандартный поток ввода нам не нужен, поэтому перенаправляем его в пустоту
-	
+
 	# Здесь происходит порождение Потомка.
 	( #! область в круглых скобках -- код, который будет выполнен процессом-потомком
 		
@@ -148,6 +156,14 @@ start()
 		# Основной цикл
 		while [ 1 ] 
 		do
+			# При переходе через сутки создаем новый .csv файл и начинаем писать в него
+			cur_date=$(date +"%D")
+			if [ cur_date != $DATE ]; then
+				create_csv_file # создаем новый файл
+				DATE=${cur_date} # присваиваем новое значение даты
+				_log "New .csv file created -- ${INFO_CSV}"
+			fi
+
 			for disk in ${disks}; do				
 				date=$(date) #! Имеет значение какие скобки использовать {} или (). () -- для комманд и функций, {} -- для переменных
 
