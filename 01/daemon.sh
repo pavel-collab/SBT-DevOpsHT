@@ -21,41 +21,12 @@ DATE=$(date +"%D")
 # Период обновления инфорации
 PERIOD="10s"
 
-#? Не знаю, почему, но парсинг аргументов не работает после того как мы распарсили $1
-#? вероятнее всего getopts начинает парсинг с самого первого аргумента $1 и не может его распознать
-#? но без START|STOP|STATUS все работает
-# function check_arg(){
-# 	if [[ $2 == -* ]]; then 
-# 		echo "Option $1 requires an argument"
-# 		exit 1
-# 	fi
-# }
-
-# parse_params()
-# {
-# 	while getopts :c:p: OPTION; do
-# 		case "$OPTION" in
-# 			c) 
-# 				echo "new csv path is $OPTARG"
-# 				check_arg "-c" "$OPTARG"
-# 				CSV_PATH=$OPTARG
-# 				;;
-# 			p)
-# 				echo "new periode is $OPTARG"
-# 				check_arg "-p" "$OPTARG"
-# 				PERIOD=$OPTARG
-# 				;;
-# 			:)
-# 				echo "Option -$OPTARG requires an argument (getopts)"
-# 				exit 1
-# 				;;
-# 			*) 
-# 				echo "unexpected option"
-# 				exit 1
-# 				;;
-# 		esac
-# 	done
-# }
+function check_arg(){
+	if [[ $2 == -* ]]; then 
+		echo "Option $1 requires an argument"
+		exit 1
+	fi
+}
 
 create_csv_file()
 {	
@@ -227,21 +198,37 @@ start()
 	echo $! > ${PID_FILE} #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
 }
 
-# Точка входа в программу -- обработка аргумента командной строки
-case $1 in
-    "START")
-		#? Не знаю, почему, но парсинг аргументов не работает после того как мы распарсили $1
-		# parse_params
-        start
-        ;;
-    "STOP")
-        stop
-        ;;
-	"STATUS")
-		status
-		;;
-    *)
-        usage
-        ;;
-esac
-exit
+while getopts :rtsc:p: OPTION; do
+	case "$OPTION" in
+		r)
+			echo "start option"
+			start
+			;;
+		t)
+			echo "stop option"
+			stop
+			;;
+		s)
+			echo "status option"
+			status
+			;;
+		c) 
+			echo "new csv path is $OPTARG"
+			check_arg "-c" "$OPTARG"
+			CSV_PATH=$OPTARG
+			;;
+		p)
+			echo "new periode is $OPTARG"
+			check_arg "-p" "$OPTARG"
+			PERIOD=$OPTARG
+			;;
+		:)
+			echo "Option -$OPTARG requires an argument (getopts)"
+			exit 1
+			;;
+		*) 
+			echo "unexpected option"
+			exit 1
+			;;
+	esac
+done
