@@ -19,9 +19,7 @@ INFO_CSV=""
 DATE=$(date +"%D")
 
 # Период обновления инфорации
-PERIOD="30m"
-
-#TODO: сделаем фичу -- если в какой-то файловой системе свободного места остается меньше 20% от общего доступного места, то пишем предупреждение в лог
+PERIOD="10s"
 
 #? Не знаю, почему, но парсинг аргументов не работает после того как мы распарсили $1
 #? вероятнее всего getopts начинает парсинг с самого первого аргумента $1 и не может его распознать
@@ -211,6 +209,12 @@ start()
         		size_info=$(df ${disk} -h | sed '1d' | awk '{print $2, $3, $4}' | sed 's/,/./g' | sed 's/ /,/g') 
         		inode_info=$(df ${disk} -hi | sed '1d' | awk '{print $2, $3, $4}' | sed 's/,/./g' | sed 's/ /,/g')
         		disk_info="${date},${disk},${size_info},${inode_info}"
+
+				# Проверяем количество свободного места на диске (в MB)
+				percent_used_disk_space=$(df ${disk} -h | sed '1d' | awk '{print $5}' | sed 's/%//')
+				if [ ${percent_used_disk_space} -gt 80 ]; then
+					_log There are too little space on disk ${disk}
+				fi
 
 				echo ${disk_info} >> ${INFO_CSV}
 			done
