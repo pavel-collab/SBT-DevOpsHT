@@ -19,7 +19,7 @@ INFO_CSV=""
 DATE=$(date +"%D")
 
 # Период обновления инфорации
-PERIOD="10s"
+PERIOD="10m"
 
 function check_arg(){
 	if [[ $2 == -* ]]; then 
