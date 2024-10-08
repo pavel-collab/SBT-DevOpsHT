@@ -53,6 +53,7 @@ stop()
         if [ "$rt" == "0" ]
         then
                 echo "Daemon stop"
+				_log "Daemon stop"
 				rm -f ${PID_FILE} 
 				cleanup
         else
@@ -79,7 +80,7 @@ _log()
     # Сдвигаем влево входные параметры
     ts=`date +"%b %d %Y %H:%M:%S"`
     hn=`cat /etc/hostname`
-    echo "$ts $hn $*" #! $* -- все аргументы функции в одной строке (см. https://ru.wikipedia.org/wiki/Bash)
+    echo "$ts $hn $*" >> ${LOG_FILE} #! $* -- все аргументы функции в одной строке (см. https://ru.wikipedia.org/wiki/Bash)
 }
 
 # функция создает файлы для логирования
@@ -113,23 +114,18 @@ run_daemon()
 {
 	# Демонизация процесса
     cd /
-   	exec > ${LOG_FILE} #! Перенаправляем стандартный вывод процесса в LOG_FILE
-    exec 2> ${ERR_LOG_FILE} #! Перенаправляем стандарный поток ошибок в лог с ошибками
-    exec < /dev/null #! Стандартный поток ввода нам не нужен, поэтому перенаправляем его в пустоту
 
 	# Здесь происходит порождение Потомка.
 	( #! область в круглых скобках -- код, который будет выполнен процессом-потомком
 		
+		exec 2> ${ERR_LOG_FILE} #! Перенаправляем стандарный поток ошибок в лог с ошибками
+		exec < /dev/null #! Стандартный поток ввода нам не нужен, поэтому перенаправляем его в пустоту
+
 		#! Вешаем sighandler на событие, которое убивает наш процесс
 		# При убийстве процесса чистим файлы, завершаем процесс
 		trap  "{ exit 0; }" TERM INT EXIT KILL
 		
 		_log "Daemon started"
-		# Пишем номер pid процесса в файл, на всякий случай
-		
-		pid_proc=$$
-		_log "process PID is" ${pid_proc}
-
 		# Основной цикл
 		while [ 1 ] 
 		do
@@ -163,7 +159,6 @@ run_daemon()
 			sleep $PERIOD
 		done
 	)& #! & в конце означает, что процесс выполняется в фоне
-
 }
 
 # Фунция запуска демона
@@ -191,11 +186,11 @@ start()
 
 	run_daemon
 		
-	echo "DEBUG after daemon run"
 	child_pid=$! #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
 	# Пишем pid потомка в файл
 	echo ${child_pid} > ${PID_FILE}
-	echo ${child_pid}
+	echo "daemon PID is ${child_pid}"
+	_log "daemon PID is ${child_pid}"
 }
 
 arg_count=0
