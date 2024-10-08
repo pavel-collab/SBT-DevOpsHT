@@ -188,29 +188,21 @@ start()
 	echo "daemon started with PID: ${child_pid}" > 1
 }
 
-while getopts :rtsc:p: OPTION; do
+arg_count=0
+
+while getopts :c:p: OPTION; do
 	case "$OPTION" in
-		r)
-			echo "start option"
-			start
-			;;
-		t)
-			echo "stop option"
-			stop
-			;;
-		s)
-			echo "status option"
-			status
-			;;
 		c) 
 			echo "new csv path is $OPTARG"
 			check_arg "-c" "$OPTARG"
 			CSV_PATH=$OPTARG
+			let "arg_count = arg_count + 2"
 			;;
 		p)
 			echo "new periode is $OPTARG"
 			check_arg "-p" "$OPTARG"
 			PERIOD=$OPTARG
+			let "arg_count = arg_count + 2"
 			;;
 		:)
 			echo "Option -$OPTARG requires an argument (getopts)"
@@ -222,3 +214,27 @@ while getopts :rtsc:p: OPTION; do
 			;;
 	esac
 done
+
+# после того, как мы распарсили вспомогательные ключи надо сдвинуть указатель аргументов на самый последний
+# именно последний аргумент отвечает за то, в каком режиме заппустится скрипт START|STOP|STATUS
+# для этого мы заводили переменную arg_count, чтобы знать, насколько сдвигать указатель
+for (( i=0; i<$arg_count; i++ )); do
+	shift #! shift сдвигает указатель на аргументы командной строки, есть, если раньше $1 указывал на 1й аргумент, теперь он указывает на второй
+done
+
+# Точка входа в программу -- обработка аргумента командной строки
+case $1 in
+    "START")
+        start
+        ;;
+    "STOP")
+        stop
+        ;;
+	"STATUS")
+		status
+		;;
+    *)
+        usage
+        ;;
+esac
+exit

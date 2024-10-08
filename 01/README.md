@@ -21,26 +21,26 @@
 
 ## Запуск
 
-У скрипта есть 3 опции: -r (run), -t (terminate) и -s (status):
-* -r -- запускает демона в фоне
-* -s -- проверяет, существует ли запущенный в системе демон, выдает pid в случае успеха
-* -t -- останавливает демона, если он запущен
+У скрипта есть 3 опции: START, STOP и STATUS:
+* START -- запускает демона в фоне
+* STATUS -- проверяет, существует ли запущенный в системе демон, выдает pid в случае успеха
+* STOP -- останавливает демона, если он запущен
 
 ```
-$./daemon.sh -r
+$./daemon.sh START
 #start option
 #start
 #окт 06 2024 15:58:25 <host-name> Created file /tmp/Вс_06_окт_2024_15:58:25_MSK.csv
 ```
 
 ```
-#./daemon.sh -s
+#./daemon.sh STATUS
 #status option
 #daemon is running
 ```
 
 ```
-$./daemon.sh -t
+$./daemon.sh STOP
 #stop option
 #Daemon stop
 ```
@@ -56,7 +56,7 @@ $./daemon.sh -t
 .csv будет создан по дефолтному пути.
 
 ```
-$./daemon.sh -p "3m" -c "/tmp/csv_log" -r
+$./daemon.sh -p "3m" -c "/tmp/csv_log" START
 #new periode is 3m
 #new csv path is /tmp/csv_log
 #start option
