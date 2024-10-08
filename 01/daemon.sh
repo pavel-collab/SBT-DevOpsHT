@@ -53,6 +53,7 @@ stop()
         if [ "$rt" == "0" ]
         then
                 echo "Daemon stop"
+				rm -f ${PID_FILE} 
         else
                 echo "Error stop daemon"
         fi
@@ -101,10 +102,10 @@ create_log_files()
 # Также, удаляются файлы с логами, а их содержимое дублируется в файлы с постфиксом .prev, лежащие по тому же пути
 cleanup()
 {
-	rm -f ${PID_FILE} 
 	cat ${LOG_FILE} >> ${LOG_FILE}.prev
 	cat ${ERR_LOG_FILE} >> ${ERR_LOG_FILE}.prev
-	rm -f ${LOG_FILE}; rm -f ${ERR_LOG_FILE}
+	rm -f ${LOG_FILE}
+	rm -f ${ERR_LOG_FILE}
 }
 
 # Фунция запуска демона
