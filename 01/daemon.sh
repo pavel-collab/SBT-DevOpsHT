@@ -4,7 +4,7 @@
 
 # Задаем переменные 
 # В этом файле будем хранить pid запущенного процесса
-PID_FILE="/run/my_daemon.pid"
+PID_FILE="/tmp/my_daemon.pid"
 # В этот файл будем записывать логи
 LOG_FILE="/tmp/my_daemon.log"
 # В этот файл будем записывать логи с ошибками
@@ -44,12 +44,6 @@ usage()
 # Функция остановки демона
 stop()
 {
-	# Проверяем запуск от рута
-    if [ $UID -ne 0 ]; then
-        echo "Root privileges required"
-        exit 0
-    fi
-
     # Если существует pid файл, то убиваем процесс с номером из файла
     if [ -e ${PID_FILE} ]
     then
@@ -116,13 +110,6 @@ cleanup()
 # Фунция запуска демона
 start()
 {
-	# Проверяем запуск от рута
-	# Это нужно, чтобы создать файл с pid по пути /run
-	if [ $UID -ne 0 ]; then #! UID (идентификатор) текущего пользователя, в соответствии с /etc/passwd, UID рута всегда 0 (см. https://www.opennet.ru/docs/RUS/bash_scripting_guide/c3270.html#UIDREF)
-    	echo "Root privileges required"
-    	exit 0
-    fi
-
 	echo "start"
 	# Проверка на вторую копию (если вдруг демон уже запущен)
     if [ -e ${PID_FILE} ]; then
@@ -154,7 +141,7 @@ start()
 		
 		#! Вешаем sighandler на событие, которое убивает наш процесс
 		# При убийстве процесса чистим файлы, завершаем процесс
-		trap  "{ cleanup; _log daemon stop; exit 255; }" TERM INT EXIT 
+		trap  "{ cleanup; exit 255; }" TERM INT EXIT 
 		
 		_log "Daemon started"
 		# Пишем номер pid процесса в файл, на всякий случай
@@ -194,8 +181,11 @@ start()
 		done
 	)& #! & в конце означает, что процесс выполняется в фоне
 	
+	child_pid = $! #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
 	# Пишем pid потомка в файл
-	echo $! > ${PID_FILE} #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
+	echo ${child_pid} > ${PID_FILE} 
+	# Пишем pid потомка в stdout
+	echo "daemon started with PID: ${child_pid}" > 1
 }
 
 while getopts :rtsc:p: OPTION; do

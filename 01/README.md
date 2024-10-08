@@ -27,30 +27,22 @@
 * -t -- останавливает демона, если он запущен
 
 ```
-$sudo ./daemon.sh -r
+$./daemon.sh -r
 #start option
 #start
 #окт 06 2024 15:58:25 <host-name> Created file /tmp/Вс_06_окт_2024_15:58:25_MSK.csv
 ```
 
 ```
-#sudo ./daemon.sh -s
+#./daemon.sh -s
 #status option
 #daemon is running
 ```
 
 ```
-$sudo ./daemon.sh -t
+$./daemon.sh -t
 #stop option
 #Daemon stop
-```
-
-ВНИМАНИЕ: запуск демона обязательно должен происходить от рута, в противном случае, скрипт не запустится
-
-```
-$./daemon.sh -r  
-#start option
-#Root privileges required
 ```
 
 ## Дополнительные опции
@@ -64,7 +56,7 @@ $./daemon.sh -r
 .csv будет создан по дефолтному пути.
 
 ```
-$sudo ./daemon.sh -p "3m" -c "/tmp/csv_log" -r
+$./daemon.sh -p "3m" -c "/tmp/csv_log" -r
 #new periode is 3m
 #new csv path is /tmp/csv_log
 #start option
