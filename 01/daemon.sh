@@ -48,12 +48,13 @@ stop()
     if [ -e ${PID_FILE} ]
     then
         _pid=$(cat ${PID_FILE}) # читаем pid процесса из файла в переменную
-        kill $_pid # убиваем процесс
+        kill -9 $_pid # убиваем процесс
         rt=$? #! $? -- код возврата последнего процесса (функции или скрипта)  (см. https://ru.wikipedia.org/wiki/Bash)
         if [ "$rt" == "0" ]
         then
                 echo "Daemon stop"
 				rm -f ${PID_FILE} 
+				cleanup
         else
                 echo "Error stop daemon"
         fi
@@ -108,29 +109,8 @@ cleanup()
 	rm -f ${ERR_LOG_FILE}
 }
 
-# Фунция запуска демона
-start()
+run_daemon()
 {
-	echo "start"
-	# Проверка на вторую копию (если вдруг демон уже запущен)
-    if [ -e ${PID_FILE} ]; then
-    	_pid=( `cat ${PID_FILE}` )
-    	if [ -e "/proc/${_pid}" ]; then
-        	echo "Daemon already running with pid = $_pid"
-        	exit 0
-    	fi
-    fi
-
-	# создаем файлы с логами
-	create_log_files
-	create_csv_file # создаем новый файл
-
-	# получаем список файловых систем
-	#! df -- выводит список файловый систем
-	#! awk '{print $1}' -- оставляет только 1й столбей
-	#! sed '1d' -- удаляет первую сточку (шапку)
-	disks=$(df --exclude-type=tmpfs --exclude-type=efivarfs | awk '{print $1}' | sed '1d')
-
 	# Демонизация процесса
     cd /
    	exec > ${LOG_FILE} #! Перенаправляем стандартный вывод процесса в LOG_FILE
@@ -142,11 +122,13 @@ start()
 		
 		#! Вешаем sighandler на событие, которое убивает наш процесс
 		# При убийстве процесса чистим файлы, завершаем процесс
-		trap  "{ cleanup; exit 255; }" TERM INT EXIT 
+		trap  "{ exit 0; }" TERM INT EXIT KILL
 		
 		_log "Daemon started"
 		# Пишем номер pid процесса в файл, на всякий случай
-		_log "process PID is" $$
+		
+		pid_proc=$$
+		_log "process PID is" ${pid_proc}
 
 		# Основной цикл
 		while [ 1 ] 
@@ -181,12 +163,39 @@ start()
 			sleep $PERIOD
 		done
 	)& #! & в конце означает, что процесс выполняется в фоне
-	
-	child_pid = $! #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
+
+}
+
+# Фунция запуска демона
+start()
+{
+	echo "start"
+	# Проверка на вторую копию (если вдруг демон уже запущен)
+    if [ -e ${PID_FILE} ]; then
+    	_pid=( `cat ${PID_FILE}` )
+    	if [ -e "/proc/${_pid}" ]; then
+        	echo "Daemon already running with pid = $_pid"
+        	exit 0
+    	fi
+    fi
+
+	# создаем файлы с логами
+	create_log_files
+	create_csv_file # создаем новый файл
+
+	# получаем список файловых систем
+	#! df -- выводит список файловый систем
+	#! awk '{print $1}' -- оставляет только 1й столбей
+	#! sed '1d' -- удаляет первую сточку (шапку)
+	disks=$(df --exclude-type=tmpfs --exclude-type=efivarfs | awk '{print $1}' | sed '1d')
+
+	run_daemon
+		
+	echo "DEBUG after daemon run"
+	child_pid=$! #! в данном случае $! -- pid последнего запущенного процесса (см. https://ru.wikipedia.org/wiki/Bash)
 	# Пишем pid потомка в файл
-	echo ${child_pid} > ${PID_FILE} 
-	# Пишем pid потомка в stdout
-	echo "daemon started with PID: ${child_pid}" > 1
+	echo ${child_pid} > ${PID_FILE}
+	echo ${child_pid}
 }
 
 arg_count=0
