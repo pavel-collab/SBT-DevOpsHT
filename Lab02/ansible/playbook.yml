@@ -1,7 +1,7 @@
 ---
 - name: Hosts setting up
   hosts: hosts
-  become: true
+  become: false
   tasks:
     - name: DEBUG ping
       ping:
@@ -19,8 +19,14 @@
     - name: Install git
       raw: apt install git
     
-    - name: Install application
+    - name: Import application
       raw: git clone https://github.com/pavel-collab/SBT-DevOpsHT.git && cd SBT-DevOpsHT && git checkout Lab02
+    
+    - name: Install application
+      raw: mkdir -p $HOME/app/ && cp -r $HOME/SBT-DevOpsHT/Lab02/app/ $HOME/
+    
+    - name: Cleanup
+      raw: rm -rf $HOME/SBT-DevOpsHT/
 
 - name: Server setup & running
   hosts: server
