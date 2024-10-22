@@ -1,36 +1,28 @@
-#! /usr/bin/python3
-
-import select
+from time import sleep
 import socket
-import sys
 
-PORT = 7555
-MY_IP = '0.0.0.0'
-with open("ip", 'r') as fd:
-    MY_IP = fd.read()
+PORT = 8000
 
-sct = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-sct.connect((MY_IP, PORT))
+with open('ip', 'r') as f:
+    # читаем ip сервера из файла и исключаем '\n'
+    MY_IP = f.read()[:-1]
 
-# используем обертку системного вызова poll:
-sources = select.poll()
-# закидываем stdin и socket и ждем событие POLLIN
-sources.register(sys.stdin, select.POLLIN)
-sources.register(sct, select.POLLIN)
+for i in range(1000):
+    sct = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+    sct.connect((MY_IP, PORT))
 
-print('ready for sending messages')
-print('to get current time send message \'get datetime\'\n')
-try:
-    while True:
-        for fd, event in sources.poll():
-            # если прилетает из stdin, то формируем и отправляем посылку
-            if fd == sys.stdin.fileno():
-                message = sys.stdin.readline().strip() # обрезаем символы \n
-                sct.sendall(message.encode('utf-8'))
-            # если прилетает из сокета, то печатаем то, что прилетело
-            else:
-                reply = sct.recv(4096).decode('utf-8').strip()
-                print(reply)
-except KeyboardInterrupt:
-    print('\nend of sending messages')
-    sct.close()
+    try:
+        sct.sendall(b'GET / HTTP/1.1\r\nHost: mipt.ru\r\nConnection: close\r\n\r\n')
+        sct.shutdown(socket.SHUT_WR)
+        reply = b''
+        while True:
+            buf = sct.recv(4096)
+            if (len(buf) == 0):
+                break
+            reply += buf
+
+        print(reply.decode('utf-8'))
+    except KeyboardInterrupt:
+        sct.close()
+
+    sleep(5)
