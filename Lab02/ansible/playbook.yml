@@ -3,6 +3,10 @@
   hosts: hosts
   become: true
   tasks:
+    - name: DEBUG ping
+      ping:
+      register: ping_result
+
     - name: Update system
       apt:
         upgrade: yes
