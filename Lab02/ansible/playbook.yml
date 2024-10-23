@@ -12,9 +12,6 @@
         upgrade: yes
         update_cache: yes
         cache_valid_time: 86400
-
-    - name: Install python
-      raw: apt install -y python3
     
     - name: Install git
       raw: apt install git
