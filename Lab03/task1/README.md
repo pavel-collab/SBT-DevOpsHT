@@ -1,6 +1,6 @@
 Build image
 ```
-docker build -t CRC32-checksum-application .
+docker build -t crc32-checksum-application .
 ```
 
 Push built image to the docker-regestry

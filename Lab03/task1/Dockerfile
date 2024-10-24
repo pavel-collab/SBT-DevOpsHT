@@ -9,12 +9,13 @@ RUN mkdir -p /usr/src/app
 
 WORKDIR /usr/src/app/
 
-ENV TZ Europe/Moscow
-
 RUN git clone https://github.com/pavel-collab/CRC32-check-sum.git
 
 WORKDIR /usr/src/app/CRC32-check-sum
 
 RUN git submodule update --init --recursive
-RUN mkdir build && cd build
+RUN mkdir build
+
+WORKDIR /usr/src/app/CRC32-check-sum/build
+
 RUN cmake .. && make
