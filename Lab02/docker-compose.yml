@@ -4,7 +4,7 @@ services:
 
   server:
     container_name: server
-    image: python_udp_server_image
+    image: default_host_image
     restart: unless-stopped
     networks:
       local_network:
@@ -12,7 +12,7 @@ services:
 
   client:
     container_name: client
-    image: python_udp_client_image
+    image: default_host_image
     restart: unless-stopped
     networks:
       local_network:
