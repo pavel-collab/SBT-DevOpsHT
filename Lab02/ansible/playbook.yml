@@ -14,7 +14,7 @@
         cache_valid_time: 86400
     
     - name: Install git
-      raw: apt install git
+      raw: apt install -y git
     
     - name: Import application
       raw: git clone https://github.com/pavel-collab/SBT-DevOpsHT.git && cd SBT-DevOpsHT && git checkout Lab02

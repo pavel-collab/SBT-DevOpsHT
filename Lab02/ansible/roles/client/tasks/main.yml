@@ -1,7 +1,7 @@
 ---
 - name: Setup ip address
   become: true
-  ansible.builtin.shell: cd app && echo {{ hostvars['client']['ansible_default_ipv4']['address'] }} > ip
+  ansible.builtin.shell: cd app && echo 172.18.0.3 > ip
 
 - name: Run client
   become: true
