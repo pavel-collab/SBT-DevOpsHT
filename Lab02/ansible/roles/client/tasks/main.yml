@@ -1,8 +1,8 @@
 ---
 - name: Setup ip address
   become: true
-  ansible.builtin.shell: cd app && echo 172.18.0.3 > ip
+  ansible.builtin.shell: cd /app && echo 172.18.0.3 > ip
 
 - name: Run client
   become: true
-  raw: python3 app/client.py &
+  raw: python3 /app/client.py &
