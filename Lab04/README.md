@@ -16,6 +16,7 @@ sudo docker-compose -p jenkins up
 ```
 docker logs jenkins
 ```
+Так же вы можете подсмотреть этот пароль в jenkins_home/secrets/initialAdminPassword
 
 # Задание 
 

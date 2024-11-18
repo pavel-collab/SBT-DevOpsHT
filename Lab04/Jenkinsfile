@@ -5,38 +5,87 @@ pipeline {
     agent any // Использует любого доступного агента
 
     stages {
+        stage('rsyslog install') {
+            steps {
+                sh 'apt update'
+                sh 'apt install -y rsyslog'
+                sh 'rm -rf /var/lib/apt/lists/*'
+                dir('Lab04') {
+                    sh 'cp rsyslog.conf /etc/rsyslog.conf'
+                }
+                sh 'rsyslogd -n &'
+            }
+        }
+
+        stage('Check Syslog') {
+            steps {
+                script {
+                    def syslogExists = sh(script: 'test -f /var/log/syslog && echo "Exists" || echo "Does not exist"', returnStdout: true).trim()
+                    echo syslogExists
+                    if (syslogExists == "Exists") {
+                        sh 'cat /var/log/syslog | tail -n 100' // Вывод последних 100 строк
+                    } else {
+                        echo "Syslog does not exist."
+                    }
+                }
+            }
+        }
+
         stage('GetCodeSource') {
             steps {
                 // Клонируем репозиторий
-                git 'https://github.com/pavel-collab/CRC32-check-sum.git'
-                sh cd 'CRC32-check-sum'
-                // Инициализируем и обновляем сабмодули
-                git submodule update --init --recursive
+                //! странно, если использовать команду git 'url' возникают ошибки. Мб потому что я сам Jenkinsfile уже тяну с гита (с другого репа)
+                sh 'git clone https://github.com/pavel-collab/CRC32-check-sum.git'
+                // указываем дерикторию для работы
+                dir('CRC32-check-sum') {
+                    // Инициализируем и обновляем сабмодули
+                    sh 'git submodule update --init --recursive'
+                }
             }
         }
-        
+
+        stage('Updating system') {
+            steps {
+                sh 'apt-get update'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                // Установка зависимостей
-                sh 'pip install -r requirements.txt'
+                // установка зависимостей для сборки
+                sh 'apt install -y cmake gcc build-essential python3 python3-pip'
+                // Установка зависимостей для тестов
+                sh 'apt install -y python3-pytest'
+            }
+        }
+
+        stage('Check Tools') {
+            steps {
+                sh 'cmake --version || (echo "CMake is not installed" && exit 1)'
+                sh 'make --version || (echo "Make is not installed" && exit 1)'
+                sh 'python3 --version || (echo "Python is not installed" && exit 1)'
             }
         }
         
         stage('Build Application') {
             steps {
                 // сборка C++ приложения
-                sh mkdir build && cd build
-                sh cmake ..
-                sh make
-                sh cd ..
+                dir('CRC32-check-sum') {
+                    sh 'mkdir build'
+                }
+                dir('CRC32-check-sum/build') {
+                    sh 'cmake ..'
+                    sh 'make'
+                }
             }
         }
         
         stage('Run Unit Tests') {
             steps {
-                sh cd tests
-                // Запускаем тесты с помощью pytest
-                sh 'pytest simple_tests.py'
+                dir('CRC32-check-sum/tests') {
+                    // Запускаем тесты с помощью pytest
+                    sh 'pytest simple_tests.py'
+                }
             }
         }
     }
