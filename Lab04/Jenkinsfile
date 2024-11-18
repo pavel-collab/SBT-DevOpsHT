@@ -1,0 +1,54 @@
+pipeline {
+    // Есть 2 принципиальных подхода к написанию Jenkins файлов: скриптовый и декларативный.
+    // Здесь мы используем более подзний декларативный подход.
+
+    agent any // Использует любого доступного агента
+
+    stages {
+        stage('GetCodeSource') {
+            steps {
+                // Клонируем репозиторий
+                git 'https://github.com/pavel-collab/CRC32-check-sum.git'
+                sh cd 'CRC32-check-sum'
+                // Инициализируем и обновляем сабмодули
+                git submodule update --init --recursive
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                // Установка зависимостей
+                sh 'pip install -r requirements.txt'
+            }
+        }
+        
+        stage('Build Application') {
+            steps {
+                // сборка C++ приложения
+                sh mkdir build && cd build
+                sh cmake ..
+                sh make
+                sh cd ..
+            }
+        }
+        
+        stage('Run Unit Tests') {
+            steps {
+                sh cd tests
+                // Запускаем тесты с помощью pytest
+                sh 'pytest simple_tests.py'
+            }
+        }
+    }
+
+    // Секция определяет действия, которые надо произвести после прохождения всех шагов.
+    // Секция success отрабатывает, если ВСЕ шаги пайплайна прошли успешно.
+    post {
+        success {
+            echo 'Tests passed!'
+        }
+        failure {
+            echo 'Tests failed!'
+        }
+    }
+}

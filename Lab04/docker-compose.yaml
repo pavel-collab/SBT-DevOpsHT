@@ -34,7 +34,7 @@ services:
     networks:
       - tools
     volumes:
-      - ./postgres/data:/var/lib/postgres/data
+      - ./postgres/data:/var/lib/postgres #? volume пусть, возможно нужно использовать путь _data или просто оставить /var/lib/postgres
     # healthcheck:
     #   test: [ "CMD-SHELL", "pg_isready -U sonar" ]
     #   interval: 10s
