@@ -5,15 +5,6 @@ pipeline {
     agent any // Использует любого доступного агента
 
     stages {
-        stage('Cleanup Workspace') {
-            steps {
-                script {
-                    // Удаляем содержимое рабочего пространства
-                    deleteDir()
-                }
-            }
-        }
-        
         stage('rsyslog install') {
             steps {
                 sh 'apt update'
@@ -36,6 +27,16 @@ pipeline {
                     } else {
                         echo "Syslog does not exist."
                     }
+                }
+            }
+        }
+
+        // чистим дерикторию перед тем, как загрузить новую версию кода
+        stage('Cleanup Workspace') {
+            steps {
+                script {
+                    // Удаляем содержимое рабочего пространства
+                    deleteDir()
                 }
             }
         }
