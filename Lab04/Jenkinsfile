@@ -5,6 +5,15 @@ pipeline {
     agent any // Использует любого доступного агента
 
     stages {
+        stage('Cleanup Workspace') {
+            steps {
+                script {
+                    // Удаляем содержимое рабочего пространства
+                    deleteDir()
+                }
+            }
+        }
+        
         stage('rsyslog install') {
             steps {
                 sh 'apt update'
@@ -34,7 +43,6 @@ pipeline {
         stage('GetCodeSource') {
             steps {
                 // Клонируем репозиторий
-                //! странно, если использовать команду git 'url' возникают ошибки. Мб потому что я сам Jenkinsfile уже тяну с гита (с другого репа)
                 sh 'git clone https://github.com/pavel-collab/CRC32-check-sum.git'
                 // указываем дерикторию для работы
                 dir('CRC32-check-sum') {
