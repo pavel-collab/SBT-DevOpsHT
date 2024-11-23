@@ -34,6 +34,24 @@ docker logs jenkins
 
 Для решения этой задачи будет использоваться freestyle job.
 
+Freestyle job настраивается в веб-интерфейсе самого jenkins. Сборка будет параметрической, добавим возможность включать/отключать прогон
+юнит-тестов и авто-тестов
+
+![](https://github.com/pavel-collab/SBT-DevOpsHT/blob/Lab04/Lab04/images/piplene_parameters_setting.png)
+
+Кроме того, будем перед каждыйм прогоном чистить пространство, чтобы нам не мешали предыдущие артефакты сборки и выводить время срабатывания
+команд в консоли
+
+![](https://github.com/pavel-collab/SBT-DevOpsHT/blob/Lab04/Lab04/images/freestyle_pipleline_settings.png)
+
+Freestyle pipeline создается путем настройки блоков с командами
+
+![](https://github.com/pavel-collab/SBT-DevOpsHT/blob/Lab04/Lab04/images/freestyle_pipeline.png)
+
+После настройки пайплайна будет доступна опция __Собрать с параметрами__
+
+![](https://github.com/pavel-collab/SBT-DevOpsHT/blob/Lab04/Lab04/images/freestyle_pipeline_parameters.png)
+
 ## Второй кейс
 
 Рассматриваем ситуацию, когда разработчик закончил работу в локальной ветке, убедился, что все собирается корректно, отрефакторил код, прогнал 
@@ -41,3 +59,10 @@ docker logs jenkins
 происходит пуш, сразу должен срабатывать триггер, запускающий пайплайн, который будет проверять код по всем фронтам: сборка, прогонка юнит-тестов и авто-тестов, формирование отчета о покрытии, полный фарш.
 
 Для этой цели будем использовать pipeline и сценарии через jenkins-файлы.
+
+Для запуска пайплайна будем использовать Jenkinsfile. Но Jenkinsfile с groovy кодом находится на гитхабе,  так что надо его оттуда вытащить
+(как правило, Jenkinsfile находится в том же репозитории, что и сам проект, но в данном случае это не так исплючительно в образовательных целях).
+
+Мы настраиваем выкачивание проекта с гитхаба: указываем url, ветку и путь к Jenkinsfile. Далее пайплайн начинает работать согласно groovy коду.
+
+![](https://github.com/pavel-collab/SBT-DevOpsHT/blob/Lab04/Lab04/images/pipeline_settings.png)
