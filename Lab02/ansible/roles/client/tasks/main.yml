@@ -1,0 +1,8 @@
+---
+- name: Setup ip address
+  become: true
+  ansible.builtin.shell: cd app && echo {{ hostvars['client']['ansible_default_ipv4']['address'] }} > ip
+
+- name: Run client
+  become: true
+  raw: python3 app/client.py &

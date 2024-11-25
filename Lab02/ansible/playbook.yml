@@ -1,0 +1,40 @@
+---
+- name: Hosts setting up
+  hosts: hosts
+  become: false
+  tasks:
+    - name: ping
+      ping:
+      register: ping_result
+
+    - name: Update system
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+    
+    - name: Install git
+      raw: apt install git
+    
+    - name: Import application
+      raw: git clone https://github.com/pavel-collab/SBT-DevOpsHT.git && cd SBT-DevOpsHT && git checkout Lab02
+    
+    - name: Install application
+      raw: mkdir -p $HOME/app/ && cp -r $HOME/SBT-DevOpsHT/Lab02/app/ $HOME/
+    
+    - name: Cleanup
+      raw: rm -rf $HOME/SBT-DevOpsHT/
+
+- name: Server setup & running
+  hosts: server
+  gather_facts: false
+  roles:
+    - server
+  become: true
+
+- name: Client setup & running
+  hosts: client
+  gather_facts: false 
+  roles:
+    - client
+  become: true
