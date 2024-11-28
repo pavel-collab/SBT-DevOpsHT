@@ -10,7 +10,7 @@ services:
     ports:
       - "9000:9000"
     networks:
-      - tools
+      - jenkins_network
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
       SONAR_JDBC_USERNAME: sonar
@@ -32,9 +32,9 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - tools
+      - jenkins_network
     volumes:
-      - ./postgres/data:/var/lib/postgres #? volume пусть, возможно нужно использовать путь _data или просто оставить /var/lib/postgres
+      - ./postgres/data:/var/lib/postgres
     # healthcheck:
     #   test: [ "CMD-SHELL", "pg_isready -U sonar" ]
     #   interval: 10s
@@ -51,11 +51,11 @@ services:
       - "50000:50000"
     container_name: jenkins
     networks:
-      - tools
+      - jenkins_network
     volumes:
       - ./jenkins_home:/var/jenkins_home
 
 
 networks:
-  tools:
+  jenkins_network:
     driver: bridge
