@@ -17,10 +17,10 @@ spec:
         image: postgres:latest
         env:
         - name: POSTGRES_USER
-          value: your_username
+          value: postgres
         - name: POSTGRES_PASSWORD
-          value: your_password
+          value: postgres
         - name: POSTGRES_DB
-          value: your_database
+          value: postgres
         ports:
         - containerPort: 5432

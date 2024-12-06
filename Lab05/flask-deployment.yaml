@@ -16,7 +16,7 @@ spec:
       - name: my-flask-app
         image: my-flask-app:latest
         ports:
-        - containerPort: 5000  # Если ваше приложение слушает на этом порту
+        - containerPort: 5000
         env:
         - name: DATABASE_URL
-          value: postgres://your_username:your_password@postgres:5432/your_database
+          value: postgres://postgres:postgres@postgres:5432/postgres

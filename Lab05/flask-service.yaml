@@ -7,6 +7,6 @@ spec:
   ports:
   - port: 5000
     targetPort: 5000
-    nodePort: 30000  # Укажите желаемый NodePort
+    nodePort: 30000 
   selector:
     app: my-flask-app
